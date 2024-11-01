@@ -35,7 +35,7 @@ class StatsOverview extends BaseWidget
             now();
 
         // Calculate total income within the date range
-        $pemasukan = Transaction::incomes()
+        $pemasukan = Transaction::income()
             ->whereBetween('date_transaction', [$startDate, $endDate])
             ->sum('amount');
 

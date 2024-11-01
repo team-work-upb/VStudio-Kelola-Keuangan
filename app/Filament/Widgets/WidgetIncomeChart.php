@@ -23,7 +23,7 @@ class WidgetIncomeChart extends ChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Pemasukan';
+    protected static ?string $heading = 'Penghasilan';
 
     /**
      * The color of the widget.
@@ -39,37 +39,44 @@ class WidgetIncomeChart extends ChartWidget
      */
     protected function getData(): array
     {
-        // Parse the start date from filters or set to null if not provided
+        // Parse the start date from filters or set to the start of the current year if not provided
         $startDate = !is_null($this->filters['startDate'] ?? null) ?
             Carbon::parse($this->filters['startDate']) :
-            null;
+            now()->startOfYear();
 
-        // Parse the end date from filters or set to current date if not provided
+        // Parse the end date from filters or set to the current date if not provided
         $endDate = !is_null($this->filters['endDate'] ?? null) ?
             Carbon::parse($this->filters['endDate']) :
             now();
 
-        // Query the income data and aggregate it per month
-        $data = Trend::query(Transaction::incomes()->newQuery())
+        // Query the income data and aggregate it per day
+        $data = Trend::query(Transaction::income()->newQuery())
             ->between(
-                start: now()->startOfYear(),
-                end: now()->endOfYear(),
+                start: $startDate,
+                end: $endDate,
             )
-            ->perMonth()
+            ->perDay()
             ->sum('amount');
+
+        // Ensure the data is sorted by date
+        $data = $data->sortBy('date');
+
+        // Set chart color to green
+        $backgroundColor = 'rgba(75, 192, 192, 0.2)'; // Green
+        $borderColor = 'rgba(75, 192, 192, 1)'; // Green
 
         // Return the chart data
         return [
             'datasets' => [
                 [
-                    'label' => 'Pemasukan Per Bulan',
+                    'label' => 'Penghasilan Per Hari',
                     'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
-                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)', // Transparent green background color
-                    'borderColor' => 'rgba(75, 192, 192, 1)', // Green border color
+                    'backgroundColor' => $backgroundColor,
+                    'borderColor' => $borderColor,
                     'borderWidth' => 2,
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => $data->map(fn (TrendValue $value) => Carbon::parse($value->date)->format('Y-m-d')),
         ];
     }
 

@@ -68,7 +68,7 @@ class Transaction extends Model
      * @param Builder $query
      * @return Builder
      */
-    public function scopeIncomes(Builder $query): Builder
+    public function scopeIncome(Builder $query): Builder
     {
         return $query->whereHas('category', function (Builder $query) {
             $query->where('is_expense', false);
@@ -81,13 +81,37 @@ class Transaction extends Model
      * @return string
      */
     public function getFormattedAmountAttribute(): string
-{
-    // Ensure the amount is a valid number
-    $amount = $this->amount ?? 0;
+    {
+        // Ensure the amount is a valid number
+        $amount = $this->amount ?? 0;
 
-    // Format the amount to Indonesian Rupiah currency format
-    return 'Rp ' . number_format($amount, 2, ',', '.');
-}
+        // Format the amount to Indonesian Rupiah currency format
+        return 'Rp ' . number_format($amount, 2, ',', '.');
+    }
+
+    /**
+     * Mutator to store amount without thousand separators.
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setAmountAttribute($value): void
+    {
+        // Remove comma separators before storing
+        $this->attributes['amount'] = str_replace(',', '', $value);
+    }
+
+    /**
+     * Accessor to display amount with thousand separators.
+     *
+     * @param float $value
+     * @return string
+     */
+    public function getAmountAttribute($value): string
+    {
+        // Format the amount to Indonesian number format with commas for thousands
+        return number_format($value, 0, ',', '.');
+    }
 
     /**
      * Set the date_transaction attribute.

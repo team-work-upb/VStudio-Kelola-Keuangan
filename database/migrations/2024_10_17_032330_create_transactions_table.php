@@ -26,8 +26,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->date('date_transaction');
             $table->integer('amount');
-            $table->string('note');
-            $table->string('image');
+            $table->string('note')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

@@ -58,6 +58,9 @@ class WidgetExpenseChart extends ChartWidget
             ->perDay()
             ->sum('amount');
 
+        // Ensure the data is sorted by date
+        $data = $data->sortBy('date');
+
         // Calculate the trend direction
         $trendDirection = $data->map(fn (TrendValue $value) => $value->aggregate)->toArray();
         $sortedTrendDirection = $trendDirection;
@@ -79,7 +82,7 @@ class WidgetExpenseChart extends ChartWidget
                     'borderWidth' => 2,
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => $data->map(fn (TrendValue $value) => Carbon::parse($value->date)->format('Y-m-d')),
         ];
     }
 
